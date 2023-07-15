@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 
 	"github.com/davecgh/go-spew/spew"
 )
@@ -16,9 +17,51 @@ type counter interface {
 
 type letterCounter struct{ identifier string }
 
+func (l letterCounter) name() string {
+	return l.identifier
+}
+
+func (l letterCounter) count(input string) int {
+	counter := 0
+	for _, c := range input {
+		if unicode.IsLetter(c) {
+			counter++
+		}
+	}
+	return counter
+}
+
 type numberCounter struct{ designation string }
 
+func (l numberCounter) name() string {
+	return l.designation
+}
+
+func (l numberCounter) count(input string) int {
+	counter := 0
+	for _, c := range input {
+		if unicode.IsNumber(c) {
+			counter++
+		}
+	}
+	return counter
+}
+
 type symbolCounter struct{ label string }
+
+func (l symbolCounter) name() string {
+	return l.label
+}
+
+func (l symbolCounter) count(input string) int {
+	counter := 0
+	for _, c := range input {
+		if !unicode.IsNumber(c) && !unicode.IsLetter(c) {
+			counter++
+		}
+	}
+	return counter
+}
 
 func doAnalysis(data string, counters ...counter) map[string]int {
 	// initialize a map to store the counts
@@ -52,10 +95,13 @@ func main() {
 
 	// convert the bytes to a string
 	data := string(bs)
-	spew.Dump(data)
 
 	// call doAnalysis and pass in the data and the counters
-
+	analysis := doAnalysis(data,
+		letterCounter{identifier: "letters"},
+		numberCounter{designation: "numbers"},
+		symbolCounter{label: "symbols"},
+	)
 	// dump the map to the console using the spew package
-	// spew.Dump(analysis)
+	spew.Dump(analysis)
 }
